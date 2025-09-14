@@ -1,0 +1,20 @@
+# Virtual environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated files
+*.json
+*.txt
+
+# API keys and secrets
+.env
+config.py
+
+# OS files
+.DS_Store
+Thumbs.db

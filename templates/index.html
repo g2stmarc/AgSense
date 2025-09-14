@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Discussion Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .config-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+        
+        .config-section h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+        
+        .platform-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .platform-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .platform-card.disabled {
+            opacity: 0.6;
+            background: #f1f5f9;
+        }
+        
+        .platform-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .platform-header input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+        
+        .platform-header h4 {
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+        
+        .control-panel {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .status-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        
+        .status-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .status-item .label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .success {
+            background: #c6f6d5;
+            color: #2f855a;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        /* Keyword Selection Styles */
+        .keyword-category {
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .keyword-header {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #2d3748;
+            transition: background-color 0.2s;
+        }
+        
+        .keyword-header:hover {
+            background: #f1f5f9;
+        }
+        
+        .keyword-list {
+            padding: 20px;
+            display: block;
+        }
+        
+        .keyword-list.collapsed {
+            display: none;
+        }
+        
+        .keyword-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .keyword-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .keyword-item:hover {
+            background: #e2e8f0;
+        }
+        
+        .keyword-item input[type="checkbox"] {
+            margin-right: 8px;
+            width: auto;
+        }
+        
+        .toggle-icon {
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+        }
+        
+        .toggle-icon.rotated {
+            transform: rotate(-90deg);
+        }
+        
+        .keyword-summary {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .keyword-summary h4 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background: white;
+            color: #4a5568;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-small:hover {
+            background: #f8fafc;
+            border-color: #cbd5e0;
+        }
+        
+        /* Analysis Section Styles */
+        .analysis-container {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .analysis-progress {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .analysis-results {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .analysis-placeholder {
+            color: #718096;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .analysis-results pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Agent Discussion Scraper</h1>
+            <p>Configure and run intelligent scraping across multiple platforms</p>
+        </div>
+        
+        <div class="content">
+            <!-- Output Configuration -->
+            <div class="config-section">
+                <h3>Output Configuration</h3>
+                <div class="form-group">
+                    <label for="outputFile">Output File Path:</label>
+                    <input type="text" id="outputFile" value="agent_discussions_custom.json" 
+                           placeholder="e.g., /path/to/results.json">
+                </div>
+                <div class="form-group">
+                    <label for="relevanceThreshold">Relevance Threshold (0.1 - 1.0):</label>
+                    <input type="number" id="relevanceThreshold" value="0.3" min="0.1" max="1.0" step="0.1">
+                </div>
+            </div>
+            
+            <!-- Search Categories -->
+            <div class="config-section">
+                <h3>Search Categories</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="agentConnectivity" checked>
+                        <label for="agentConnectivity">Agent Connectivity (A2A, MCP)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="agentDiscovery" checked>
+                        <label for="agentDiscovery">Agent Discovery & Fleet Management</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="agentIdentity" checked>
+                        <label for="agentIdentity">Agent Identity & Security</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Keywords & Depth -->
+            <div class="config-section">
+                <h3>Search Keywords & Depth</h3>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: #4a5568;">Keyword Selection</h4>
+                        
+                        <!-- Agent Connectivity Keywords -->
+                        <div class="keyword-category">
+                            <div class="keyword-header" onclick="toggleKeywordSection('connectivity')">
+                                <span>Agent Connectivity & Communication</span>
+                                <span class="toggle-icon" id="connectivity-icon">▼</span>
+                            </div>
+                            <div class="keyword-list" id="connectivity-keywords">
+                                <div class="keyword-grid">
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="connectivity" data-keyword="agent to agent"> agent to agent</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="connectivity" data-keyword="A2A protocol"> A2A protocol</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="connectivity" data-keyword="MCP"> MCP</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="connectivity" data-keyword="multi-agent communication"> multi-agent communication</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="agent messaging"> agent messaging</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="inter-agent"> inter-agent</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="agent network"> agent network</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="agent coordination"> agent coordination</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="agent orchestration"> agent orchestration</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="agent workflow"> agent workflow</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="agent collaboration"> agent collaboration</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="connectivity" data-keyword="cross-agent"> cross-agent</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Agent Discovery Keywords -->
+                        <div class="keyword-category">
+                            <div class="keyword-header" onclick="toggleKeywordSection('discovery')">
+                                <span>Agent Discovery & Fleet Management</span>
+                                <span class="toggle-icon" id="discovery-icon">▼</span>
+                            </div>
+                            <div class="keyword-list" id="discovery-keywords">
+                                <div class="keyword-grid">
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="discovery" data-keyword="agent registry"> agent registry</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="discovery" data-keyword="agent discovery"> agent discovery</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="discovery" data-keyword="fleet management"> fleet management</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="discovery" data-keyword="agent marketplace"> agent marketplace</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent directory"> agent directory</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="service discovery"> service discovery</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent catalog"> agent catalog</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent inventory"> agent inventory</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent lookup"> agent lookup</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent routing"> agent routing</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent broker"> agent broker</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="discovery" data-keyword="agent mesh"> agent mesh</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Agent Identity Keywords -->
+                        <div class="keyword-category">
+                            <div class="keyword-header" onclick="toggleKeywordSection('identity')">
+                                <span>Agent Identity & Security</span>
+                                <span class="toggle-icon" id="identity-icon">▼</span>
+                            </div>
+                            <div class="keyword-list" id="identity-keywords">
+                                <div class="keyword-grid">
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="identity" data-keyword="agent identity"> agent identity</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="identity" data-keyword="agent authentication"> agent authentication</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="identity" data-keyword="zero trust agents"> zero trust agents</label>
+                                    <label class="keyword-item"><input type="checkbox" checked data-category="identity" data-keyword="agent authorization"> agent authorization</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent credentials"> agent credentials</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent security"> agent security</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent access control"> agent access control</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent PKI"> agent PKI</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent certificates"> agent certificates</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent tokens"> agent tokens</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent permissions"> agent permissions</label>
+                                    <label class="keyword-item"><input type="checkbox" data-category="identity" data-keyword="agent roles"> agent roles</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="form-group">
+                            <label for="resultsPerSearch">Results per Search:</label>
+                            <select id="resultsPerSearch">
+                                <option value="10">10 (Fast)</option>
+                                <option value="15">15 (Balanced)</option>
+                                <option value="20" selected>20 (Thorough)</option>
+                                <option value="30">30 (Comprehensive)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="keyword-summary">
+                            <h4>Selected Keywords</h4>
+                            <div class="summary-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="connectivity-count">4</span>
+                                    <span class="stat-label">Connectivity</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="discovery-count">4</span>
+                                    <span class="stat-label">Discovery</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="identity-count">4</span>
+                                    <span class="stat-label">Identity</span>
+                                </div>
+                            </div>
+                            <div class="quick-actions">
+                                <button type="button" class="btn-small" onclick="selectAllKeywords()">Select All</button>
+                                <button type="button" class="btn-small" onclick="selectTopKeywords()">Top 4 Each</button>
+                                <button type="button" class="btn-small" onclick="clearAllKeywords()">Clear All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Platform Configuration -->
+            <div class="config-section">
+                <h3>Platform Configuration</h3>
+                <div class="platform-config">
+                    <!-- Reddit -->
+                    <div class="platform-card" id="redditCard">
+                        <div class="platform-header">
+                            <input type="checkbox" id="enableReddit" checked>
+                            <h4>Reddit</h4>
+                        </div>
+                        <div class="form-group">
+                            <label>Subreddits:</label>
+                            <textarea id="redditSubreddits" rows="3">MachineLearning,artificial,programming,LocalLLaMA,singularity,compsci</textarea>
+                            <small>Comma-separated list</small>
+                        </div>
+                    </div>
+                    
+                    <!-- GitHub -->
+                    <div class="platform-card" id="githubCard">
+                        <div class="platform-header">
+                            <input type="checkbox" id="enableGithub" checked>
+                            <h4>GitHub</h4>
+                        </div>
+                        <div class="form-group">
+                            <label for="githubToken">Access Token (optional):</label>
+                            <input type="password" id="githubToken" placeholder="For higher rate limits">
+                        </div>
+                    </div>
+                    
+                    <!-- Stack Overflow -->
+                    <div class="platform-card" id="stackoverflowCard">
+                        <div class="platform-header">
+                            <input type="checkbox" id="enableStackoverflow" checked>
+                            <h4>Stack Overflow</h4>
+                        </div>
+                        <p>No additional configuration required</p>
+                    </div>
+                    
+                    <!-- Hacker News -->
+                    <div class="platform-card" id="hackernewsCard">
+                        <div class="platform-header">
+                            <input type="checkbox" id="enableHackernews" checked>
+                            <h4>Hacker News</h4>
+                        </div>
+                        <p>No additional configuration required</p>
+                    </div>
+                    
+                    <!-- ArXiv -->
+                    <div class="platform-card" id="arxivCard">
+                        <div class="platform-header">
+                            <input type="checkbox" id="enableArxiv" checked>
+                            <h4>ArXiv</h4>
+                        </div>
+                        <p>Academic papers and research</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analysis Section -->
+            <div class="config-section" id="analysisSection">
+                <h3>ChatGPT Analysis</h3>
+                <div class="form-group">
+                    <label for="openaiApiKey">OpenAI API Key:</label>
+                    <input type="password" id="openaiApiKey" placeholder="Enter your OpenAI API key">
+                    <small>Your API key is not stored and only used for this analysis</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="jsonFileSelector">Select JSON File to Analyze:</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="jsonFileSelector" style="flex: 1;">
+                            <option value="">Select a JSON file...</option>
+                        </select>
+                        <button type="button" class="btn-small" onclick="refreshJsonFiles()">Refresh</button>
+                    </div>
+                    <small>Available JSON files from your scraping sessions</small>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                    <div>
+                        <h4>Analysis Prompt</h4>
+                        <div class="form-group">
+                            <textarea id="analysisPrompt" rows="12" style="font-family: monospace;">I've used vibe coding to create a scraper that fetches discussions on the internet from relevant sources about developer and tech expert painpoint for building multi-agent applications. Here is the JSON file with all the elements. Please extract top 20 insights and summarize pain points. Also select 20 of the most relevant quotes to illustrate this analysis. And please start with a short tabular stats recap showing the different sources and how they are used in your report</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="analysisFileName">Save Analysis As:</label>
+                            <input type="text" id="analysisFileName" value="agent_analysis_results.txt" placeholder="filename.txt">
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-primary" id="startAnalysisBtn">
+                                Analyze Results
+                            </button>
+                            <button class="btn btn-secondary" id="saveAnalysisBtn" disabled>
+                                Download Analysis
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>Analysis Results</h4>
+                        <div class="analysis-container">
+                            <div class="analysis-progress hidden" id="analysisProgress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="analysisProgressFill" style="width: 0%"></div>
+                                </div>
+                                <div id="analysisCurrentTask">Initializing...</div>
+                            </div>
+                            
+                            <div class="analysis-results" id="analysisResults">
+                                <div class="analysis-placeholder">
+                                    Analysis results will appear here after you run the analysis. Make sure you have:
+                                    <ul style="margin: 10px 0; padding-left: 20px;">
+                                        <li>Completed a scraping session</li>
+                                        <li>Entered your OpenAI API key</li>
+                                        <li>Selected a JSON file to analyze</li>
+                                        <li>Customized the prompt if needed</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h3>Control Panel</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="startBtn">
+                        Start Scraping
+                    </button>
+                    <button class="btn btn-danger hidden" id="stopBtn">
+                        Stop Scraping
+                    </button>
+                    <button class="btn btn-secondary" id="downloadBtn" disabled>
+                        Download Results
+                    </button>
+                </div>
+                
+                <div class="progress-container hidden" id="progressContainer">
+                    <h4>Scraping Progress</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div id="currentTask">Initializing...</div>
+                    
+                    <div class="status-info">
+                        <div class="status-item">
+                            <div class="value" id="progressPercent">0%</div>
+                            <div class="label">Progress</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="value" id="totalResults">0</div>
+                            <div class="label">Results Found</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="value" id="elapsedTime">00:00:00</div>
+                            <div class="label">Elapsed Time</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="messages"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let pollingInterval;
+        let analysisPollingInterval;
+        
+        // Platform enable/disable handlers
+        document.querySelectorAll('.platform-header input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.platform-card');
+                if (this.checked) {
+                    card.classList.remove('disabled');
+                } else {
+                    card.classList.add('disabled');
+                }
+            });
+        });
+        
+        // Start scraping
+        document.getElementById('startBtn').addEventListener('click', function() {
+            console.log('Button clicked!');
+            
+            const config = gatherConfiguration();
+            console.log('Config gathered:', config);
+            
+            if (!config.output_file.trim()) {
+                showMessage('Please specify an output file path', 'error');
+                return;
+            }
+            
+            console.log('Sending request to /start_scraping');
+            
+            fetch('/start_scraping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => {
+                console.log('Response received:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    showMessage('Scraping started successfully!', 'success');
+                    startPolling();
+                    toggleButtons(true);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.log('Error occurred:', error);
+                showMessage('Error starting scraper: ' + error, 'error');
+            });
+        });
+        
+        // Stop scraping
+        document.getElementById('stopBtn').addEventListener('click', function() {
+            fetch('/stop_scraping', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                showMessage('Scraping stopped', 'error');
+                stopPolling();
+                toggleButtons(false);
+            });
+        });
+        
+        // Download results
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const outputFile = document.getElementById('outputFile').value;
+            window.open('/download/' + encodeURIComponent(outputFile));
+        });
+        
+        // Start analysis
+        document.getElementById('startAnalysisBtn').addEventListener('click', function() {
+            console.log('Analysis button clicked!');
+            
+            const apiKey = document.getElementById('openaiApiKey').value;
+            const prompt = document.getElementById('analysisPrompt').value;
+            const selectedFile = document.getElementById('jsonFileSelector').value;
+            
+            if (!apiKey.trim()) {
+                showMessage('Please enter your OpenAI API key', 'error');
+                return;
+            }
+            
+            if (!prompt.trim()) {
+                showMessage('Please enter an analysis prompt', 'error');
+                return;
+            }
+            
+            if (!selectedFile.trim()) {
+                showMessage('Please select a JSON file to analyze', 'error');
+                return;
+            }
+            
+            console.log('Starting analysis with file:', selectedFile);
+            
+            fetch('/analyze_results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    json_file_path: selectedFile,
+                    prompt: prompt,
+                    api_key: apiKey
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Analysis response:', data);
+                if (data.success) {
+                    showMessage('Analysis started!', 'success');
+                    startAnalysisPolling();
+                    toggleAnalysisButtons(true);
+                } else {
+                    showMessage('Analysis failed: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.log('Analysis error:', error);
+                showMessage('Error starting analysis: ' + error, 'error');
+            });
+        });
+        
+        // Save analysis results
+        document.getElementById('saveAnalysisBtn').addEventListener('click', function() {
+            const content = document.getElementById('analysisResults').innerText;
+            const filename = document.getElementById('analysisFileName').value;
+            
+            if (!content.trim()) {
+                showMessage('No analysis results to save', 'error');
+                return;
+            }
+            
+            fetch('/save_analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: content,
+                    filename: filename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Analysis saved as: ' + data.filename, 'success');
+                    window.open('/download/' + encodeURIComponent(data.filename));
+                } else {
+                    showMessage('Failed to save analysis: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('Error saving analysis: ' + error, 'error');
+            });
+        });
+        
+        function gatherConfiguration() {
+            return {
+                output_file: document.getElementById('outputFile').value,
+                relevance_threshold: parseFloat(document.getElementById('relevanceThreshold').value),
+                search_categories: {
+                    agent_connectivity: document.getElementById('agentConnectivity').checked,
+                    agent_discovery: document.getElementById('agentDiscovery').checked,
+                    agent_identity: document.getElementById('agentIdentity').checked
+                },
+                search_depth: {
+                    results_per_search: parseInt(document.getElementById('resultsPerSearch').value)
+                },
+                selected_keywords: getSelectedKeywords(),
+                platforms: {
+                    reddit: {
+                        enabled: document.getElementById('enableReddit').checked,
+                        subreddits: document.getElementById('redditSubreddits').value.split(',').map(s => s.trim())
+                    },
+                    github: {
+                        enabled: document.getElementById('enableGithub').checked,
+                        token: document.getElementById('githubToken').value
+                    },
+                    stackoverflow: {
+                        enabled: document.getElementById('enableStackoverflow').checked
+                    },
+                    hackernews: {
+                        enabled: document.getElementById('enableHackernews').checked
+                    },
+                    arxiv: {
+                        enabled: document.getElementById('enableArxiv').checked
+                    }
+                }
+            };
+        }
+        
+        function getSelectedKeywords() {
+            const keywords = {
+                agent_connectivity: [],
+                agent_discovery: [],
+                agent_identity: []
+            };
+            
+            document.querySelectorAll('input[data-category]').forEach(checkbox => {
+                if (checkbox.checked) {
+                    const category = checkbox.getAttribute('data-category');
+                    const keyword = checkbox.getAttribute('data-keyword');
+                    if (category === 'connectivity') {
+                        keywords.agent_connectivity.push(keyword);
+                    } else if (category === 'discovery') {
+                        keywords.agent_discovery.push(keyword);
+                    } else if (category === 'identity') {
+                        keywords.agent_identity.push(keyword);
+                    }
+                }
+            });
+            
+            return keywords;
+        }
+        
+        function toggleKeywordSection(section) {
+            const keywordList = document.getElementById(section + '-keywords');
+            const icon = document.getElementById(section + '-icon');
+            
+            if (keywordList.classList.contains('collapsed')) {
+                keywordList.classList.remove('collapsed');
+                icon.classList.remove('rotated');
+                icon.textContent = '▼';
+            } else {
+                keywordList.classList.add('collapsed');
+                icon.classList.add('rotated');
+                icon.textContent = '▶';
+            }
+        }
+        
+        function updateKeywordCounts() {
+            const connectivityCount = document.querySelectorAll('input[data-category="connectivity"]:checked').length;
+            const discoveryCount = document.querySelectorAll('input[data-category="discovery"]:checked').length;
+            const identityCount = document.querySelectorAll('input[data-category="identity"]:checked').length;
+            
+            const connectivityElement = document.getElementById('connectivity-count');
+            const discoveryElement = document.getElementById('discovery-count');
+            const identityElement = document.getElementById('identity-count');
+            
+            if (connectivityElement) connectivityElement.textContent = connectivityCount;
+            if (discoveryElement) discoveryElement.textContent = discoveryCount;
+            if (identityElement) identityElement.textContent = identityCount;
+        }
+        
+        function selectAllKeywords() {
+            document.querySelectorAll('input[data-category]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateKeywordCounts();
+        }
+        
+        function selectTopKeywords() {
+            document.querySelectorAll('input[data-category]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            ['connectivity', 'discovery', 'identity'].forEach(category => {
+                const checkboxes = document.querySelectorAll(`input[data-category="${category}"]`);
+                for (let i = 0; i < Math.min(4, checkboxes.length); i++) {
+                    checkboxes[i].checked = true;
+                }
+            });
+            
+            updateKeywordCounts();
+        }
+        
+        function clearAllKeywords() {
+            document.querySelectorAll('input[data-category]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateKeywordCounts();
+        }
+        
+        function startPolling() {
+            document.getElementById('progressContainer').classList.remove('hidden');
+            pollingInterval = setInterval(updateStatus, 2000);
+        }
+        
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        }
+        
+        function updateStatus() {
+            fetch('/status')
+            .then(response => response.json())
+            .then(status => {
+                document.getElementById('progressFill').style.width = status.progress + '%';
+                document.getElementById('progressPercent').textContent = status.progress + '%';
+                document.getElementById('currentTask').textContent = status.current_task;
+                document.getElementById('totalResults').textContent = status.total_results;
+                document.getElementById('elapsedTime').textContent = status.elapsed_time || '00:00:00';
+                
+                if (!status.running) {
+                    stopPolling();
+                    toggleButtons(false);
+                    
+                    if (status.error) {
+                        showMessage('Scraping failed: ' + status.error, 'error');
+                    } else if (status.progress === 100) {
+                        showMessage(`Scraping completed! Found ${status.total_results} discussions.`, 'success');
+                        document.getElementById('downloadBtn').disabled = false;
+                        refreshJsonFiles(); // Refresh file list after scraping completes
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching status:', error);
+            });
+        }
+        
+        function toggleButtons(scraping) {
+            document.getElementById('startBtn').classList.toggle('hidden', scraping);
+            document.getElementById('stopBtn').classList.toggle('hidden', !scraping);
+        }
+        
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = type;
+            messageEl.textContent = message;
+            messagesDiv.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.parentNode.removeChild(messageEl);
+                }
+            }, 5000);
+        }
+        
+        function startAnalysisPolling() {
+            document.getElementById('analysisProgress').classList.remove('hidden');
+            document.getElementById('analysisResults').innerHTML = '<div class="analysis-placeholder">Analysis in progress...</div>';
+            analysisPollingInterval = setInterval(updateAnalysisStatus, 2000);
+        }
+        
+        function stopAnalysisPolling() {
+            if (analysisPollingInterval) {
+                clearInterval(analysisPollingInterval);
+            }
+        }
+        
+        function updateAnalysisStatus() {
+            fetch('/analysis_status')
+            .then(response => response.json())
+            .then(status => {
+                document.getElementById('analysisProgressFill').style.width = status.progress + '%';
+                document.getElementById('analysisCurrentTask').textContent = status.current_task;
+                
+                if (!status.running) {
+                    stopAnalysisPolling();
+                    toggleAnalysisButtons(false);
+                    document.getElementById('analysisProgress').classList.add('hidden');
+                    
+                    if (status.error) {
+                        showMessage('Analysis failed: ' + status.error, 'error');
+                        document.getElementById('analysisResults').innerHTML = '<div class="analysis-placeholder error">Analysis failed: ' + status.error + '</div>';
+                    } else if (status.result) {
+                        document.getElementById('analysisResults').innerHTML = '<pre>' + status.result + '</pre>';
+                        document.getElementById('saveAnalysisBtn').disabled = false;
+                        showMessage('Analysis completed successfully!', 'success');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching analysis status:', error);
+            });
+        }
+        
+        function toggleAnalysisButtons(analyzing) {
+            document.getElementById('startAnalysisBtn').disabled = analyzing;
+            if (!analyzing) {
+                document.getElementById('startAnalysisBtn').textContent = 'Analyze Results';
+            } else {
+                document.getElementById('startAnalysisBtn').textContent = 'Analyzing...';
+            }
+        }
+        
+        function refreshJsonFiles() {
+            fetch('/list_json_files')
+            .then(response => response.json())
+            .then(data => {
+                const selector = document.getElementById('jsonFileSelector');
+                selector.innerHTML = '<option value="">Select a JSON file...</option>';
+                
+                if (data.files && data.files.length > 0) {
+                    data.files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file.filename;
+                        option.textContent = `${file.filename} (${Math.round(file.size/1024)}KB, ${file.modified})`;
+                        selector.appendChild(option);
+                    });
+                    
+                    if (data.files.length > 0) {
+                        selector.value = data.files[0].filename;
+                    }
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No JSON files found';
+                    selector.appendChild(option);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading JSON files:', error);
+                showMessage('Error loading available files', 'error');
+            });
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[data-category]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateKeywordCounts);
+            });
+            
+            updateKeywordCounts();
+            refreshJsonFiles();
+        });
+    </script>
+</body>
+</html>
