@@ -235,25 +235,37 @@ class ConfigurableScraper:
         """Count total number of scraping tasks for progress tracking"""
         total = 0
         
-        # Count Reddit tasks
+        # Count Reddit tasks - each keyword search is a separate task
         if self.config['platforms']['reddit']['enabled']:
             subreddit_count = len(self.config['platforms']['reddit']['subreddits'])
-            enabled_categories = sum(self.config['search_categories'].values())
-            total += subreddit_count * enabled_categories
+            for category, keywords in self.scraper.search_terms.items():
+                if self.config['search_categories'][category] and keywords:
+                    # Each subreddit * each keyword = one task
+                    total += subreddit_count * len(keywords)
         
-        # Count GitHub tasks (issues + repos = 1 task per category)
+        # Count GitHub tasks - each category with keywords = 1 task (issues + repos combined)
         if self.config['platforms']['github']['enabled']:
-            total += sum(self.config['search_categories'].values())
+            for category, keywords in self.scraper.search_terms.items():
+                if self.config['search_categories'][category] and keywords:
+                    total += 1
         
-        # Count other platform tasks
+        # Count Stack Overflow tasks - top 3 keywords per category
         if self.config['platforms']['stackoverflow']['enabled']:
-            total += sum(self.config['search_categories'].values())
+            for category, keywords in self.scraper.search_terms.items():
+                if self.config['search_categories'][category] and keywords:
+                    total += min(3, len(keywords))
         
+        # Count Hacker News tasks - top 3 keywords per category
         if self.config['platforms']['hackernews']['enabled']:
-            total += sum(self.config['search_categories'].values())
+            for category, keywords in self.scraper.search_terms.items():
+                if self.config['search_categories'][category] and keywords:
+                    total += min(3, len(keywords))
         
+        # Count ArXiv tasks - 1 per category (combines keywords)
         if self.config['platforms']['arxiv']['enabled']:
-            total += sum(self.config['search_categories'].values())
+            for category, keywords in self.scraper.search_terms.items():
+                if self.config['search_categories'][category] and keywords:
+                    total += 1
         
         return max(total, 1)
     
@@ -325,12 +337,12 @@ def analyze_with_chatgpt(json_data, prompt, api_key):
         
         # Make the API call (updated format)
         response = client.chat.completions.create(
-            model="gpt-4o-mini",  # Use more affordable model
+            model="gpt-3.5-turbo",  # Much cheaper than gpt-4o-mini
             messages=[
                 {"role": "system", "content": "You are an expert analyst specializing in developer tools and multi-agent systems. Provide detailed, structured analysis with clear insights."},
                 {"role": "user", "content": full_prompt}
             ],
-            max_tokens=4000,
+            max_tokens=3000,  # Reduced to save costs
             temperature=0.7
         )
         
