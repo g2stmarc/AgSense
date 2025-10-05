@@ -652,6 +652,47 @@
                 </div>
             </div>
             
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h3>Control Panel</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="startBtn">
+                        Start Scraping
+                    </button>
+                    <button class="btn btn-danger hidden" id="stopBtn">
+                        Stop Scraping
+                    </button>
+                    <button class="btn btn-secondary" id="downloadBtn" disabled>
+                        Download Results
+                    </button>
+                </div>
+                
+                <div class="progress-container hidden" id="progressContainer">
+                    <h4>Scraping Progress</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div id="currentTask">Initializing...</div>
+                    
+                    <div class="status-info">
+                        <div class="status-item">
+                            <div class="value" id="progressPercent">0%</div>
+                            <div class="label">Progress</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="value" id="totalResults">0</div>
+                            <div class="label">Results Found</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="value" id="elapsedTime">00:00:00</div>
+                            <div class="label">Elapsed Time</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="messages"></div>
+            </div>
+            
             <!-- Analysis Section -->
             <div class="config-section" id="analysisSection">
                 <h3>ChatGPT Analysis</h3>
@@ -718,47 +759,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Control Panel -->
-            <div class="control-panel">
-                <h3>Control Panel</h3>
-                <div class="button-group">
-                    <button class="btn btn-primary" id="startBtn">
-                        Start Scraping
-                    </button>
-                    <button class="btn btn-danger hidden" id="stopBtn">
-                        Stop Scraping
-                    </button>
-                    <button class="btn btn-secondary" id="downloadBtn" disabled>
-                        Download Results
-                    </button>
-                </div>
-                
-                <div class="progress-container hidden" id="progressContainer">
-                    <h4>Scraping Progress</h4>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                    </div>
-                    <div id="currentTask">Initializing...</div>
-                    
-                    <div class="status-info">
-                        <div class="status-item">
-                            <div class="value" id="progressPercent">0%</div>
-                            <div class="label">Progress</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="value" id="totalResults">0</div>
-                            <div class="label">Results Found</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="value" id="elapsedTime">00:00:00</div>
-                            <div class="label">Elapsed Time</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="messages"></div>
             </div>
         </div>
     </div>
